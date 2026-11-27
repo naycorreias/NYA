@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NYA</title>
+<meta name="description" content="NYA — lembrete e registro da pílula anticoncepcional">
+<meta name="theme-color" content="#0B0A1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NYA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: íntimo, calmo, noturno — um diário que cuida, sem alarmismo.
+IDEA: a cartela (blister) de pílulas é o objeto central do app.
+PICTURE: a cartela real desenhada no topo de "Hoje", cada pílula com seu estado.
+COLOUR/TYPE: noite índigo, violeta e azul profundos, dourado como acento; Fraunces + Manrope.
+LAYOUT: coluna única de celular (iPhone 15, 393px), barra de abas inferior com safe-area.
+*/
+:root{color-scheme:dark;
+  --bg:#0B0A1A;--bg2:#120F28;--card:rgba(255,255,255,.045);--card2:rgba(255,255,255,.07);
+  --line:rgba(190,180,255,.13);--ink:#EEEBFF;--muted:#A19CC8;--dim:#6F6A97;
+  --violet:#8F72FF;--violet-d:#3B2B80;--blue:#5A86FF;--blue-d:#1C2A62;
+  --gold:#F2C94C;--gold-d:#B8891F;--rose:#FF8FA6;
+  --r:22px;--tab:72px;
+  --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+body{margin:0;color:var(--ink);font:16px/1.5 Manrope,system-ui,-apple-system,sans-serif;overflow-x:clip;min-height:100dvh;
+  background:radial-gradient(120% 60% at 0% 0%,#24175A 0%,transparent 55%),radial-gradient(90% 50% at 100% 100%,#14245A 0%,transparent 60%),var(--bg);background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding:calc(var(--sat) + 14px) 18px calc(var(--tab) + var(--sab) + 28px)}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;margin:0;line-height:1.08;letter-spacing:-.01em}
+h1{font-size:34px}h2{font-size:24px}h3{font-size:18px}
+.muted{color:var(--muted)}.dim{color:var(--dim)}.small{font-size:13.5px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand b{font-family:Fraunces,serif;font-size:26px;letter-spacing:.14em;font-weight:600}
+.chip-date{font-size:13.5px;color:var(--muted);padding:7px 12px;border:1px solid var(--line);border-radius:99px;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.hero{background:linear-gradient(160deg,rgba(143,114,255,.18),rgba(90,134,255,.08) 60%,rgba(255,255,255,.03));padding:20px 18px 18px}
+.eyebrow{font-size:13.5px;color:var(--muted);margin-bottom:4px}
+.status{margin:8px 0 16px;font-size:15.5px;color:var(--muted)}
+.status strong{color:var(--gold);font-weight:600}
+/* cartela */
+.pack{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:18px;padding:12px 12px 14px;margin-bottom:16px}
+.wk,.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.wk span{text-align:center;font-size:12px;color:var(--dim);padding-bottom:6px}
+.pill{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:700;position:relative;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--dim);padding:0}
+.pill.taken{background:radial-gradient(circle at 34% 30%,#FFF1B8,#F2C94C 45%,#A97A12);color:#3A2A00;border-color:transparent;box-shadow:0 4px 12px rgba(242,201,76,.25)}
+.pill.late{background:radial-gradient(circle at 34% 30%,#FFF1B8,#E9B949 45%,#8D6510);color:#3A2A00;border:2px solid var(--violet)}
+.pill.missed{background:radial-gradient(circle at 34% 30%,#FFD0DA,#FF8FA6 45%,#A83E62);color:#3D0A1C;border-color:transparent;box-shadow:0 4px 12px rgba(255,143,166,.2)}
+.pill.pause{background:transparent;border:1.5px dashed rgba(190,180,255,.22);color:var(--dim);font-weight:500}
+.pill.placebo{background:radial-gradient(circle at 34% 30%,#B9CBFF,#5A86FF 50%,#24398C);color:#0A1440;border-color:transparent}
+.pill.placebo.pend{opacity:.45}
+.pill.today{outline:2px solid var(--gold);outline-offset:3px}
+.pill.today.pending{animation:pulse 2.2s ease-in-out infinite}
+.pill.sym::after{content:"";position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--violet);border:2px solid var(--bg)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,201,76,.45)}50%{box-shadow:0 0 0 8px rgba(242,201,76,0)}}
+@media (prefers-reduced-motion:reduce){.pill.today.pending{animation:none}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+/* botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:16px;border:1px solid var(--line);background:var(--card2);font-weight:600;font-size:15.5px}
+.btn:focus-visible,.tab:focus-visible,.pill:focus-visible,.day:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn.primary{background:linear-gradient(180deg,#F7D772,#E5B73A);color:#2B1F00;border:0;box-shadow:0 8px 24px rgba(242,201,76,.22)}
+.btn.violet{background:linear-gradient(180deg,#9D84FF,#7255EC);border:0;color:#fff}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--rose);border-color:rgba(255,143,166,.35);background:transparent}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>.btn{flex:1 1 0}
+.done{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:rgba(242,201,76,.1);border:1px solid rgba(242,201,76,.3)}
+.done svg{flex:none;color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px}
+.stat b{display:block;font-family:Fraunces,serif;font-size:24px;font-weight:600;white-space:nowrap}
+.stat span{font-size:12.5px;color:var(--muted)}
+.alert{border-color:rgba(255,143,166,.35);background:rgba(255,143,166,.07)}
+.alert.info{border-color:rgba(90,134,255,.4);background:rgba(90,134,255,.08)}
+.alert h3{font-size:16.5px;margin-bottom:6px;font-family:Manrope,sans-serif;font-weight:700}
+.alert p{margin:0 0 12px;font-size:14.5px;color:var(--muted)}
+/* calendário */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+
+.iconbtn{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+.cal .wk span{padding-bottom:8px}
+.day{aspect-ratio:1/1.12;border-radius:14px;border:1px solid transparent;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;font-size:14px;color:var(--ink);position:relative}
+.day.out{visibility:hidden}
+.day .dot{width:16px;height:16px;border-radius:50%;border:1px solid var(--line)}
+.day.taken .dot{background:radial-gradient(circle at 34% 30%,#FFF1B8,#F2C94C 50%,#A97A12);border:0}
+.day.late .dot{background:#E9B949;border:2px solid var(--violet)}
+.day.missed .dot{background:radial-gradient(circle at 34% 30%,#FFD0DA,#FF8FA6 50%,#A83E62);border:0}
+.day.pause .dot{border:1.5px dashed rgba(190,180,255,.25)}
+.day.pend .dot{opacity:.45}
+.day.skip .dot{border:1.5px dashed var(--rose)}
+.day.placebo .dot{background:radial-gradient(circle at 34% 30%,#B9CBFF,#5A86FF 55%,#24398C);border:0}
+.day.pending .dot{border:1.5px solid var(--gold)}
+.day.istoday{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.35)}
+.day.sym::after{content:"";position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--violet)}
+.day.future{color:var(--dim)}
+/* histórico */
+.month{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px}
+.month h3{font-size:18px}
+.month .pct{font-family:Fraunces,serif;font-size:24px;font-weight:600;white-space:nowrap}
+.bar{grid-column:1/-1;height:6px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--blue) 60%,var(--gold))}
+.month .meta{grid-column:1/-1;font-size:13px;color:var(--muted)}
+/* formulários */
+label.f{display:block;margin-bottom:14px}
+label.f>span{display:block;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+input[type=text],input[type=number],input[type=time],input[type=date],select,textarea{width:100%;min-height:48px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(10,8,26,.6);font-size:16px;-webkit-appearance:none;appearance:none}
+input[type=time],input[type=date]{display:block}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:38px}
+textarea{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--line)}
+.switch:last-child{border-bottom:0}
+.switch input{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:99px;background:rgba(255,255,255,.12);position:relative;flex:none;transition:background .2s;margin:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch input:checked{background:var(--violet)}
+.switch input:checked::after{transform:translateX(20px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:transparent;font-size:14.5px;color:var(--muted)}
+.chip[aria-pressed=true]{background:rgba(143,114,255,.22);border-color:var(--violet);color:var(--ink)}
+.seg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.seg .chip{padding:0 4px;font-size:13px}
+.sub{margin:18px 0 10px;font-size:13.5px;color:var(--muted);font-weight:600}
+.steps{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px}
+.steps li{margin-bottom:6px}.steps b{color:var(--ink)}
+code.url{display:block;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.3);font-size:13px;overflow-wrap:anywhere;margin:8px 0}
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(10px,calc(50% - 260px)) calc(8px + var(--sab));background:rgba(11,10,26,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;justify-content:center;font-size:11.5px;color:var(--dim);font-weight:600;border-radius:14px}
+.tab[aria-current=page]{color:var(--gold)}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,4,14,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:560px;margin:0 auto;max-height:92dvh;overflow:auto;background:linear-gradient(180deg,#1A1538,#100D24);border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 18px calc(20px + var(--sab));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility .3s;overscroll-behavior:contain;visibility:hidden}
+.sheet.on{transform:none;visibility:visible}
+.grab{width:40px;height:5px;border-radius:9px;background:rgba(255,255,255,.2);margin:0 auto 14px}
+.sheethead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+
+.modal{position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:24px;background:rgba(5,4,14,.7)}
+.modal.on{display:grid}
+.modal .box{width:100%;max-width:360px;text-align:center;background:linear-gradient(180deg,#221A4A,#120F2A);border:1px solid rgba(242,201,76,.35);border-radius:26px;padding:26px 20px 20px}
+.modal .box h2{margin:14px 0 6px}
+.toast{position:fixed;left:50%;bottom:calc(var(--tab) + var(--sab) + 18px);transform:translate(-50%,20px);background:#2A2160;border:1px solid var(--line);padding:12px 18px;border-radius:14px;font-size:14.5px;z-index:70;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.view{display:none}.view.on{display:block}
+.welcome{text-align:center;padding:20px 0 6px}
+.welcome h1{font-size:44px;letter-spacing:.16em;margin:16px 0 8px}
+.note{font-size:12.5px;color:var(--dim);margin-top:8px}
+.empty{text-align:center;color:var(--muted);padding:20px 8px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gV" x1="0" x2="1"><stop offset="0" stop-color="#A68EFF"/><stop offset="1" stop-color="#5A86FF"/></linearGradient>
+    <linearGradient id="gG" x1="0" x2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#E2AE2E"/></linearGradient>
+  </defs>
+  <symbol id="i-logo" viewBox="0 0 64 64"><g transform="rotate(-35 32 32)"><rect x="8" y="21" width="48" height="22" rx="11" fill="url(#gV)"/><path d="M32 21h13a11 11 0 0 1 0 22H32z" fill="url(#gG)"/><rect x="13" y="25" width="14" height="4" rx="2" fill="#fff" opacity=".35"/></g></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M9.7 8.7l4.6 6.6" /></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-hist" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4M12 8v4l3 2"/></g></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-l" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-r" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></g></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h4"/></g></symbol>
+</svg>
+
+<div class="wrap">
+  <!-- BOAS-VINDAS -->
+  <section class="view" id="v-welcome">
+    <div class="welcome">
+      <svg width="84" height="84"><use href="#i-logo"/></svg>
+      <h1>NYA</h1>
+      <p class="muted">Sua pílula, no seu tempo. Vamos configurar sua cartela — leva menos de um minuto.</p>
+    </div>
+    <div class="card" id="setupHost"></div>
+  </section>
+
+  <!-- HOJE -->
+  <section class="view" id="v-hoje">
+    <header class="top">
+      <div class="brand"><svg width="34" height="34"><use href="#i-logo"/></svg><b>NYA</b></div>
+      <span class="chip-date" id="todayChip"></span>
+    </header>
+    <div class="card hero" id="hero"></div>
+    <div id="alerts"></div>
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="row">
+        <button class="btn" id="btnSym"><svg width="20" height="20"><use href="#i-note"/></svg>Sintomas</button>
+        <button class="btn" id="btnVomit">Vomitei</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDÁRIO -->
+  <section class="view" id="v-calendario">
+    <div class="calhead">
+      <button class="iconbtn" id="prevM" aria-label="Mês anterior"><svg width="22" height="22"><use href="#i-l"/></svg></button>
+      <h2 id="calTitle"></h2>
+      <button class="iconbtn" id="nextM" aria-label="Próximo mês"><svg width="22" height="22"><use href="#i-r"/></svg></button>
+    </div>
+    <div class="card cal">
+      <div class="wk" id="calWk"></div>
+      <div class="grid7" id="calGrid"></div>
+      <div class="legend">
+        <span><i style="background:#F2C94C"></i>Tomada</span>
+        <span><i style="background:#E9B949;box-shadow:0 0 0 2px #8F72FF"></i>Fora da janela</span>
+        <span><i style="background:#FF8FA6"></i>Esquecida</span>
+        <span><i style="border:1.5px dashed #FF8FA6"></i>Adiado</span>
+        <span><i style="border:1.5px dashed #6F6A97"></i>Pausa</span>
+        <span><i style="background:#5A86FF"></i>Placebo</span>
+        <span><i style="background:#8F72FF;width:7px;height:7px"></i>Sintomas</span>
+      </div>
+    </div>
+    <div class="card" id="monthSummary"></div>
+    <p class="note" style="text-align:center">Toque em um dia para registrar ou editar.</p>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section class="view" id="v-historico">
+    <header class="top"><h1>Histórico</h1></header>
+    <p class="muted" style="margin-top:-6px">Seus meses anteriores. Toque para abrir no calendário.</p>
+    <div id="histList"></div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section class="view" id="v-ajustes">
+    <header class="top"><h1>Ajustes</h1></header>
+    <div class="card" id="settingsHost"></div>
+
+    <div class="card">
+      <h3>Lembretes</h3>
+      <p class="muted small">O iPhone só deixa sites agendarem notificações com um servidor. Por isso o NYA combina três formas — use as duas primeiras para não depender do app aberto.</p>
+      <div class="sub">1 · Alarme diário no Calendário do iPhone (recomendado)</div>
+      <button class="btn violet block" id="btnIcs"><svg width="20" height="20"><use href="#i-cal"/></svg>Adicionar ao Calendário</button>
+      <p class="note">Cria um evento no seu horário com alerta, só nos dias de pílula ativa (próximos 12 meses). Refaça se mudar o horário.</p>
+      <div class="sub">2 · Automação no app Atalhos</div>
+      <ol class="steps">
+        <li>Abra <b>Atalhos → Automação → Nova Automação</b>.</li>
+        <li>Escolha <b>Horário do Dia</b>, defina <b id="shTime">21:00</b>, <b>Diariamente</b> e <b>Executar Imediatamente</b>.</li>
+        <li>Adicione a ação <b>Mostrar Notificação</b> com “Hora da pílula”.</li>
+        <li>Opcional: adicione <b>Abrir URLs</b> com o endereço do NYA:</li>
+      </ol>
+      <code class="url" id="appUrl"></code>
+      <button class="btn block" id="btnCopyUrl">Copiar endereço</button>
+      <div class="sub">3 · Aviso dentro do NYA</div>
+      <button class="btn block" id="btnNotif"><svg width="20" height="20"><use href="#i-bell"/></svg><span id="notifLabel">Ativar notificações</span></button>
+      <p class="note">Mostra um aviso quando o app está aberto ou em segundo plano. No iPhone, só funciona com o NYA instalado na Tela de Início (iOS 16.4+).</p>
+    </div>
+
+    <div class="card">
+      <h3>Instalar como app no iPhone</h3>
+      <ol class="steps" style="margin-top:10px">
+        <li>Abra o NYA no <b>Safari</b>.</li>
+        <li>Toque em <b>Compartilhar</b> (quadrado com seta).</li>
+        <li>Escolha <b>Adicionar à Tela de Início</b> e confirme “NYA”.</li>
+        <li>Abra pelo ícone — ele roda em tela cheia e offline.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Backup</h3>
+      <p class="muted small">Seus dados ficam só neste aparelho. Salve um backup antes de trocar de celular ou limpar o Safari.</p>
+      <div class="row">
+        <button class="btn" id="btnExport">Exportar</button>
+        <label class="btn" for="importFile" style="flex:1 1 0">Importar</label>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button class="btn ghost block" id="btnCopyBackup" style="margin-top:10px">Copiar backup como texto</button>
+    </div>
+
+    <div class="card">
+      <button class="btn danger block" id="btnReset">Apagar todos os dados</button>
+      <p class="note">O NYA não substitui orientação médica. Em caso de esquecimento, vômito ou diarreia, siga a bula do seu anticoncepcional e fale com sua ginecologista.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Navegação">
+  <button class="tab" data-v="hoje"><svg width="24" height="24"><use href="#i-pill"/></svg>Hoje</button>
+  <button class="tab" data-v="calendario"><svg width="24" height="24"><use href="#i-cal"/></svg>Calendário</button>
+  <button class="tab" data-v="historico"><svg width="24" height="24"><use href="#i-hist"/></svg>Histórico</button>
+  <button class="tab" data-v="ajustes"><svg width="24" height="24"><use href="#i-set"/></svg>Ajustes</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+
+<div class="modal" id="remind" role="alertdialog" aria-labelledby="remTitle">
+  <div class="box">
+    <svg width="64" height="64"><use href="#i-logo"/></svg>
+    <h2 id="remTitle">Hora da sua pílula</h2>
+    <p class="muted" id="remText" style="margin:0 0 18px"></p>
+    <button class="btn primary block" id="remTake"><svg width="20" height="20"><use href="#i-check"/></svg>Tomei agora</button>
+    <button class="btn ghost block" id="remSnooze" style="margin-top:8px">Lembrar em 10 min</button>
+  </div>
+</div>
+
+<div class="modal" id="confirm" role="alertdialog" aria-labelledby="cfTitle">
+  <div class="box" style="border-color:var(--line)">
+    <h2 id="cfTitle" style="margin-top:0"></h2>
+    <p class="muted" id="cfText" style="margin:0 0 18px"></p>
+    <div class="row"><button class="btn" id="cfNo">Cancelar</button><button class="btn danger" id="cfYes">Confirmar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+/* ---------- utilidades ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const keyOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return keyOf(d)};
+const diffDays=(a,b)=>Math.round((Date.UTC(...b.split('-').map((v,i)=>i==1?v-1:+v))-Date.UTC(...a.split('-').map((v,i)=>i==1?v-1:+v)))/864e5);
+const todayKey=()=>keyOf(new Date());
+const nowHM=()=>{const d=new Date();return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const toMin=hm=>{const[h,m]=(hm||'0:0').split(':').map(Number);return h*60+m};
+const mod=(a,n)=>((a%n)+n)%n;
+const WK=['D','S','T','Q','Q','S','S'];
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const fmtLong=k=>cap(parse(k).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}));
+const fmtShort=k=>parse(k).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+const monthName=(y,m)=>cap(new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}));
+const SYMPTOMS=['Cólica','Dor de cabeça','Náusea','Vômito','Diarreia','Escape','Seios sensíveis','Inchaço','Acne','Humor alterado','Cansaço','Libido baixa','Tontura'];
+const FLOW=['Nenhum','Escape','Leve','Médio','Intenso'];
+const TYPES={'21-7':[21,7,'21 ativas + 7 de pausa'],'24-4':[24,4,'24 ativas + 4'],'28':[28,0,'28 contínua (sem pausa)'],'custom':[21,7,'Personalizada']};
+
+/* ---------- armazenamento (try/catch: o Safari privado pode bloquear) ---------- */
+const KEY='nya.v1';let mem=null;
+const load=()=>{try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return mem||{p:null,logs:{}}};
+let S=load();
+const save=()=>{mem=S;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+/* ---------- lógica da cartela ---------- */
+const cyc=()=>S.p.active+S.p.pause;
+// cada "empurrão" atrasa a cartela 1 dia a partir de 'from' (dia seguinte ao esquecido)
+const offAt=k=>(S.p.shifts||[]).reduce((a,x)=>a+(diffDays(x.from,k)>=0?x.days:0),0);
+function info(k){
+  const p=S.p,c=cyc(),raw=diffDays(p.start,k)-offAt(k),idx=mod(raw,c),pause=idx>=p.active;
+  return{idx,n:idx+1,pause,expects:!pause||p.placebo,pk:Math.floor(raw/c),packStart:addDays(k,-idx),before:diffDays(p.start,k)<0,skip:!!S.logs[k]?.skip};
+}
+// datas reais de cada pílula da cartela que contém k (pula os dias adiados)
+function packDays(k){
+  const pk=info(k).pk,map=[];
+  for(const dir of[-1,1]){let d=dir<0?k:addDays(k,1);for(let x=0;x<120;x++){const i=info(d);if(i.pk!==pk)break;if(!i.skip)map[i.idx]=d;d=addDays(d,dir)}}
+  return map;
+}
+function shiftPack(F){
+  if(S.logs[F]?.skip)return;
+  S.p.shifts=(S.p.shifts||[]).concat({from:addDays(F,1),days:1});
+  const L=S.logs[F]||{};delete L.taken;delete L.time;delete L.makeup;L.skip=true;S.logs[F]=L;
+  save();closeSheet();renderAll();toast('Cartela empurrada 1 dia');
+}
+function unshiftPack(F){
+  S.p.shifts=(S.p.shifts||[]).filter(x=>x.from!==addDays(F,1));
+  const L=S.logs[F];if(L){delete L.skip;if(!Object.keys(L).length)delete S.logs[F]}
+  save();closeSheet();renderAll();toast('Adiamento desfeito');
+}
+function makeup(F){
+  const L=S.logs[F]||{};delete L.skip;L.taken=true;L.time=nowHM();L.makeup=todayKey();S.logs[F]=L;
+  save();closeSheet();renderAll();toast('Pílula esquecida registrada — tome a de hoje no horário');
+}
+function status(k){
+  if(!S.p)return'none';
+  const t=todayKey(),i=info(k),L=S.logs[k];
+  if(L&&L.skip)return'skip';
+  if(L&&L.taken){
+    if(i.pause)return'placebo';
+    if(L.makeup&&L.makeup!==k)return'late';
+    const late=toMin(L.time)-toMin(S.p.time)>S.p.tol*60;
+    return late?'late':'taken';
+  }
+  if(i.before)return'none';
+  if(diffDays(t,k)>0)return i.pause?(S.p.placebo?'placebo pend':'pause'):'future';
+  if(i.pause)return S.p.placebo?(k===t?'pending placebo pend':'placebo pend'):'pause';
+  return k===t?'pending':'missed';
+}
+const hasSym=k=>{const L=S.logs[k];return!!(L&&((L.sym&&L.sym.length)||L.vom||L.note||(L.flow&&L.flow!=='Nenhum')))};
+function monthStats(y,m){
+  const t=todayKey();let exp=0,ok=0,late=0,miss=0,symDays=0;const count={};
+  const days=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=days;d++){
+    const k=keyOf(new Date(y,m,d));if(diffDays(t,k)>0)break;
+    if(hasSym(k)){symDays++;(S.logs[k].sym||[]).forEach(s=>count[s]=(count[s]||0)+1)}
+    if(!S.p||info(k).before||info(k).pause)continue;
+    const s=status(k);if(s==='skip')continue;exp++;if(s==='taken')ok++;else if(s==='late')late++;else if(s==='missed')miss++;
+  }
+  const top=Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
+  return{exp,ok,late,miss,symDays,top,pct:exp?Math.round((ok+late)/exp*100):null};
+}
+function streak(){
+  let k=todayKey(),n=0;if(status(k)==='pending')k=addDays(k,-1);
+  for(let x=0;x<1000;x++){
+    const i=info(k);if(i.before)break;
+    if(S.logs[k]?.taken)n++;else if(!i.pause)break;
+    k=addDays(k,-1);
+  }
+  return n;
+}
+
+/* ---------- toast / confirmação ---------- */
+let tt;const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2400)};
+function ask(title,text,yes){$('#cfTitle').textContent=title;$('#cfText').textContent=text;$('#confirm').classList.add('on');
+  $('#cfYes').onclick=()=>{$('#confirm').classList.remove('on');yes()};$('#cfNo').onclick=()=>$('#confirm').classList.remove('on')}
+
+/* ---------- registrar tomada ---------- */
+function takeNow(k=todayKey()){
+  const L=S.logs[k]||(S.logs[k]={});L.taken=true;L.time=nowHM();save();
+  hideRemind();clearBadge();renderAll();toast(`Registrado às ${L.time}`);
+}
+
+/* ---------- HOJE ---------- */
+function renderToday(){
+  const k=todayKey(),p=S.p,i=info(k),L=S.logs[k]||{};
+  $('#todayChip').textContent=parse(k).toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+  const st=status(k),n=cyc(),cols=Math.min(7,n);
+  // cartela atual
+  let pills='',wk='';
+  const map=packDays(k),aligned=diffDays(map[0],map[n-1])===n-1;
+  if(aligned)for(let c=0;c<cols;c++)wk+=`<span>${WK[parse(map[c]).getDay()]}</span>`;
+  for(let j=0;j<n;j++){
+    const dk=map[j]||addDays(i.packStart,j),s=status(dk),isT=dk===k;
+    const label=j<p.active?j+1:(p.placebo?j+1:'·');
+    pills+=`<button class="pill ${s} ${isT?'today':''} ${hasSym(dk)?'sym':''}" data-day="${dk}" aria-label="${j+1}ª pílula, ${fmtShort(dk)}">${label}</button>`;
+  }
+  let head,line,action;
+  if(i.pause&&!p.placebo){
+    const left=n-i.idx,next=addDays(i.packStart,n);
+    head=`Pausa · dia ${i.idx-p.active+1} de ${p.pause}`;
+    line=`Nova cartela começa <strong>${fmtLong(next).toLowerCase()}</strong>${left===1?' — amanhã':''}.`;
+    action=`<button class="btn block" data-open="${k}">Registrar sintomas ou fluxo</button>`;
+  }else{
+    head=i.pause?`Placebo ${i.idx-p.active+1} de ${p.pause}`:`Pílula ${i.n} de ${p.active}`;
+    if(L.taken){
+      line=`Tudo certo por hoje.`;
+      action=`<div class="done"><svg width="26" height="26"><use href="#i-check"/></svg><div><b>Tomada às ${esc(L.time)}</b><div class="small muted">${st==='late'?'Fora da sua janela de '+p.tol+'h — confira a bula.':'Dentro do horário.'}</div></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn ghost" data-open="${k}">Editar</button><button class="btn ghost" id="undo">Desfazer</button></div>`;
+    }else{
+      const d=toMin(nowHM())-toMin(p.time);
+      line=d<0?`Seu horário é <strong>${p.time}</strong> · faltam ${Math.floor(-d/60)?Math.floor(-d/60)+'h ':''}${-d%60}min`
+              :`Seu horário era <strong>${p.time}</strong> · atrasada há ${Math.floor(d/60)?Math.floor(d/60)+'h ':''}${d%60}min`;
+      action=`<button class="btn primary block" id="take"><svg width="22" height="22"><use href="#i-check"/></svg>Tomei agora</button>
+      <button class="btn ghost block" data-open="${k}" style="margin-top:8px">Tomei em outro horário</button>`;
+    }
+  }
+  $('#hero').innerHTML=`<div class="eyebrow">${esc(p.name||'Minha pílula')} · ${esc(typeLabel())}</div><h1>${head}</h1>
+   <p class="status">${line}</p>
+   <div class="pack">${wk?`<div class="wk">${wk}</div>`:`<p class="note" style="margin:0 0 10px">Cartela empurrada — cada pílula segue a data em que foi tomada.</p>`}<div class="grid7">${pills}</div></div>${action}`;
+  // alertas
+  let a='';const y=addDays(k,-1);
+  if(status(y)==='missed')a+=`<div class="card alert"><h3>Ontem não foi registrada</h3><p>Como quer registrar? Siga sempre a orientação da bula para pílula esquecida e considere método de barreira nos próximos dias.</p>${missedActions(y)}<button class="btn ghost block" data-open="${y}" style="margin-top:8px">Na verdade tomei ontem</button></div>`;
+  if(L.vom&&!L.extra)a+=`<div class="card alert info"><h3>Você registrou vômito hoje</h3><p>Vômito até cerca de 3–4h após a pílula pode atrapalhar a absorção. A orientação comum das bulas é tomar outra pílula — confirme na sua.</p><button class="btn block" data-open="${k}">Registrar outra pílula</button></div>`;
+  $('#alerts').innerHTML=a;
+  const now=new Date(),ms=monthStats(now.getFullYear(),now.getMonth());
+  $('#stats').innerHTML=`<div class="stat"><b>${streak()}</b><span>dias seguidos</span></div>
+   <div class="stat"><b>${ms.pct==null?'—':ms.pct+'%'}</b><span>adesão no mês</span></div>
+   <div class="stat"><b>${ms.miss}</b><span>esquecidas</span></div>`;
+  const tk=$('#take');if(tk)tk.onclick=()=>takeNow();
+  const un=$('#undo');if(un)un.onclick=()=>{L.taken=false;delete L.time;save();renderAll();toast('Registro desfeito')};
+}
+function missedActions(F){
+  return`<div class="row"><button class="btn" data-makeup="${F}">Tomei 2 hoje</button><button class="btn" data-shift="${F}">Empurrar 1 dia</button></div>
+  <p class="note">“2 hoje”: a esquecida conta como tomada com atraso e a cartela não muda. “Empurrar”: a cartela, a pausa e o placebo andam 1 dia.</p>`;
+}
+const typeLabel=()=>S.p.type==='custom'?`${S.p.active} + ${S.p.pause}`:TYPES[S.p.type][2];
+
+/* ---------- CALENDÁRIO ---------- */
+let cy,cm;
+function renderCal(){
+  const t=todayKey();
+  $('#calTitle').textContent=monthName(cy,cm);
+  $('#calWk').innerHTML=WK.map(w=>`<span>${w}</span>`).join('');
+  const first=new Date(cy,cm,1).getDay(),days=new Date(cy,cm+1,0).getDate();let h='';
+  for(let i=0;i<first;i++)h+=`<span class="day out"></span>`;
+  for(let d=1;d<=days;d++){
+    const k=keyOf(new Date(cy,cm,d)),s=status(k);
+    h+=`<button class="day ${s} ${k===t?'istoday':''} ${hasSym(k)?'sym':''}" data-day="${k}" aria-label="${fmtLong(k)}">${d}<span class="dot"></span></button>`;
+  }
+  $('#calGrid').innerHTML=h;
+  const ms=monthStats(cy,cm);
+  $('#monthSummary').innerHTML=ms.exp||ms.symDays?`<h3>Resumo do mês</h3>
+   <p class="muted small" style="margin:6px 0 0">${ms.ok} no horário · ${ms.late} fora da janela · ${ms.miss} esquecidas${ms.pct!=null?` · <b style="color:var(--gold)">${ms.pct}% de adesão</b>`:''}<br>${ms.symDays?`Sintomas em ${ms.symDays} dia(s)${ms.top.length?': '+ms.top.map(esc).join(', '):''}`:'Nenhum sintoma registrado.'}</p>`
+   :`<p class="empty" style="padding:4px">Sem registros neste mês.</p>`;
+}
+
+/* ---------- HISTÓRICO ---------- */
+function renderHist(){
+  const keys=Object.keys(S.logs).concat(S.p?[S.p.start]:[]).sort();
+  const now=new Date();if(!keys.length){$('#histList').innerHTML='<p class="empty">Ainda não há histórico.</p>';return}
+  const f=parse(keys[0]);let y=now.getFullYear(),m=now.getMonth(),h='';
+  while(y>f.getFullYear()||(y===f.getFullYear()&&m>=f.getMonth())){
+    const s=monthStats(y,m);
+    h+=`<button class="month" data-ym="${y}-${m}"><h3>${monthName(y,m)}</h3><span class="pct">${s.pct==null?'—':s.pct+'%'}</span>
+      <span class="bar"><i style="width:${s.pct||0}%"></i></span>
+      <span class="meta">${s.ok+s.late} de ${s.exp} tomadas · ${s.miss} esquecida(s)${s.symDays?' · sintomas em '+s.symDays+' dia(s)':''}</span></button>`;
+    if(--m<0){m=11;y--}
+  }
+  $('#histList').innerHTML=h;
+}
+
+/* ---------- FOLHA DO DIA (sintomas, vômito, horário) ---------- */
+function openDay(k){
+  if(!S.p)return;
+  const L=JSON.parse(JSON.stringify(S.logs[k]||{})),i=info(k),future=diffDays(todayKey(),k)>0;
+  L.sym=L.sym||[];
+  const st=status(k);
+  const pillTxt=st==='skip'?'Adiado · cartela empurrada 1 dia':i.pause?(S.p.placebo?`Placebo ${i.idx-S.p.active+1}`:`Pausa · dia ${i.idx-S.p.active+1}`):`Pílula ${i.n} de ${S.p.active}`;
+  $('#sheet').innerHTML=`<div class="grab"></div>
+   <div class="sheethead"><div><div class="eyebrow">${pillTxt}</div><h2 id="sheetTitle">${fmtLong(k)}</h2></div>
+   <button class="iconbtn" id="shClose" aria-label="Fechar"><svg width="20" height="20"><use href="#i-x"/></svg></button></div>
+   ${future?'<p class="note">Dia futuro — você pode deixar notas, mas não registrar tomada.</p>':''}
+   ${st==='missed'?`<div class="card alert" style="padding:14px"><h3>Pílula esquecida</h3>${missedActions(k)}</div>`:''}
+   ${st==='skip'?`<div class="card alert info" style="padding:14px"><p>Neste dia a cartela foi empurrada: a pílula ${i.n} passou para o dia seguinte.</p><button class="btn block" data-unshift="${k}">Desfazer adiamento</button></div>`:''}
+   ${L.makeup&&L.makeup!==k?`<p class="note">Pílula tomada depois, em ${fmtShort(L.makeup)} às ${esc(L.time)}.</p>`:''}
+   <div class="card" style="padding:6px 16px">
+    ${i.expects&&!future&&st!=='skip'?`<label class="switch"><span>Tomei a pílula</span><input type="checkbox" id="fTaken" ${L.taken?'checked':''}></label>
+    <label class="f" id="wTime" style="margin:10px 0" ${L.taken?'':'hidden'}><span>Horário</span><input type="time" id="fTime" value="${esc(L.time||(k===todayKey()?nowHM():S.p.time))}"></label>`:''}
+    <label class="switch"><span>Vomitei</span><input type="checkbox" id="fVom" ${L.vom?'checked':''}></label>
+    <div id="wVom" ${L.vom?'':'hidden'}>
+      <label class="f" style="margin:10px 0"><span>Horário do vômito</span><input type="time" id="fVomT" value="${esc(L.vom?.time||nowHM())}"></label>
+      <label class="switch"><span>Tomei outra pílula</span><input type="checkbox" id="fExtra" ${L.extra?'checked':''}></label>
+      <label class="f" id="wExtra" style="margin:10px 0" ${L.extra?'':'hidden'}><span>Horário da pílula extra</span><input type="time" id="fExtraT" value="${esc(L.extra?.time||nowHM())}"></label>
+    </div>
+   </div>
+   <div class="sub">Sintomas</div>
+   <div class="chips" id="fSym">${SYMPTOMS.map(s=>`<button class="chip" aria-pressed="${L.sym.includes(s)}">${s}</button>`).join('')}</div>
+   <div class="sub">Sangramento</div>
+   <div class="seg" id="fFlow">${FLOW.map(s=>`<button class="chip" aria-pressed="${(L.flow||'Nenhum')===s}">${s}</button>`).join('')}</div>
+   <label class="f" style="margin-top:16px"><span>Anotações</span><textarea id="fNote" placeholder="Ex.: troquei de cartela, tomei antibiótico, consulta marcada…">${esc(L.note||'')}</textarea></label>
+   <button class="btn primary block" id="shSave">Salvar</button>
+   ${S.logs[k]?'<button class="btn ghost block" id="shDel" style="margin-top:8px">Limpar este dia</button>':''}`;
+  const tog=(cb,w)=>{const c=$(cb);if(c)c.onchange=()=>{$(w).hidden=!c.checked}};
+  tog('#fTaken','#wTime');tog('#fVom','#wVom');tog('#fExtra','#wExtra');
+  $('#fSym').onclick=e=>{const b=e.target.closest('.chip');if(b)b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')};
+  $('#fFlow').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;$('#fFlow').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b))};
+  $('#shClose').onclick=closeSheet;
+  $('#shSave').onclick=()=>{
+    const N={};
+    if($('#fTaken')?.checked){N.taken=true;N.time=$('#fTime').value||S.p.time;if(L.makeup)N.makeup=L.makeup}
+    if(L.skip)N.skip=true;
+    if($('#fVom').checked){N.vom={time:$('#fVomT').value};if(!N.sym)N.sym=[];if($('#fExtra').checked)N.extra={time:$('#fExtraT').value}}
+    const sym=[...$('#fSym').querySelectorAll('[aria-pressed=true]')].map(b=>b.textContent);
+    if(N.vom&&!sym.includes('Vômito'))sym.push('Vômito');
+    if(sym.length)N.sym=sym;else delete N.sym;
+    const fl=$('#fFlow [aria-pressed=true]')?.textContent;if(fl&&fl!=='Nenhum')N.flow=fl;
+    const nt=$('#fNote').value.trim();if(nt)N.note=nt;
+    if(Object.keys(N).length)S.logs[k]=N;else delete S.logs[k];
+    save();closeSheet();renderAll();toast('Dia salvo');
+    if(k===todayKey()&&N.taken){hideRemind();clearBadge()}
+  };
+  const del=$('#shDel');if(del)del.onclick=()=>{delete S.logs[k];save();closeSheet();renderAll();toast('Dia limpo')};
+  $('#scrim').classList.add('on');$('#sheet').classList.add('on');
+}
+function closeSheet(){$('#scrim').classList.remove('on');$('#sheet').classList.remove('on')}
+
+/* ---------- configuração da pílula (boas-vindas e ajustes) ---------- */
+function setupForm(first){
+  const p=S.p||{name:'',type:'21-7',active:21,pause:7,placebo:false,start:todayKey(),time:'21:00',tol:12,kind:'comb'};
+  const curN=S.p?info(todayKey()).n:1;
+  return`<h3 style="margin-bottom:14px">${first?'Sua cartela':'Minha pílula'}</h3>
+  <label class="f"><span>Nome da pílula</span><input type="text" id="sName" value="${esc(p.name)}" placeholder="Ex.: Yasmin, Selene, Cerazette" autocomplete="off"></label>
+  <label class="f"><span>Tipo de cartela</span><select id="sType">${Object.entries(TYPES).map(([v,t])=>`<option value="${v}" ${p.type===v?'selected':''}>${t[2]}</option>`).join('')}</select></label>
+  <div class="two" id="sCustom" ${p.type==='custom'?'':'hidden'}>
+    <label class="f"><span>Pílulas ativas</span><input type="number" id="sAct" min="1" max="120" inputmode="numeric" value="${p.active}"></label>
+    <label class="f"><span>Dias de pausa</span><input type="number" id="sPau" min="0" max="30" inputmode="numeric" value="${p.pause}"></label>
+  </div>
+  <label class="switch" style="margin-bottom:10px" id="sPlaWrap" ${p.pause?'':'hidden'}><span>A pausa tem pílulas inativas (placebo)<br><span class="small dim">Ex.: Yaz 24+4 — o lembrete continua nesses dias.</span></span><input type="checkbox" id="sPla" ${p.placebo?'checked':''}></label>
+  <label class="f"><span>Hormônio</span><select id="sKind"><option value="comb" ${p.kind==='comb'?'selected':''}>Combinada</option><option value="prog" ${p.kind==='prog'?'selected':''}>Só progestagênio (minipílula)</option></select></label>
+  <div class="two">
+    <label class="f"><span>Horário do lembrete</span><input type="time" id="sTime" value="${p.time}"></label>
+    <label class="f"><span>Tolerância de atraso</span><select id="sTol">${[3,12,24].map(h=>`<option value="${h}" ${p.tol==h?'selected':''}>${h} horas</option>`).join('')}</select></label>
+  </div>
+  <label class="f"><span>Qual pílula da cartela é hoje?</span><input type="number" id="sNow" min="1" inputmode="numeric" value="${curN}"></label>
+  <p class="note" style="margin-top:-6px">O NYA calcula sozinho o início da cartela e as próximas pausas. Confira a tolerância de atraso na bula (em geral 12h nas combinadas e 3h ou 12h nas minipílulas).</p>
+  <button class="btn primary block" id="sSave" style="margin-top:14px">${first?'Começar':'Salvar alterações'}</button>`;
+}
+function bindSetup(host,first){
+  host.innerHTML=setupForm(first);
+  const sync=()=>{const t=$('#sType').value;$('#sCustom').hidden=t!=='custom';if(t!=='custom'){$('#sAct').value=TYPES[t][0];$('#sPau').value=TYPES[t][1]}$('#sPlaWrap').hidden=+$('#sPau').value===0;if(t==='24-4'&&first)$('#sPla').checked=true};
+  $('#sType').onchange=sync;$('#sPau').oninput=()=>{$('#sPlaWrap').hidden=+$('#sPau').value===0};
+  $('#sKind').onchange=()=>{$('#sTol').value=$('#sKind').value==='prog'?'3':'12'};
+  $('#sSave').onclick=()=>{
+    const active=Math.max(1,+$('#sAct').value||21),pause=Math.max(0,+$('#sPau').value||0),c=active+pause;
+    const nowN=Math.min(c,Math.max(1,+$('#sNow').value||1));
+    S.p={name:$('#sName').value.trim(),type:$('#sType').value,active,pause,placebo:pause>0&&$('#sPla').checked,
+      kind:$('#sKind').value,time:$('#sTime').value||'21:00',tol:+$('#sTol').value,start:addDays(todayKey(),-(nowN-1)-(S.p?offAt(todayKey()):0)),shifts:S.p?.shifts||[]};
+    save();toast(first?'Cartela configurada':'Ajustes salvos');
+    if(first)location.hash='hoje';renderAll();
+  };
+}
+
+/* ---------- lembrete (popup + notificação + badge) ---------- */
+let rem={day:null,until:0};
+function due(){
+  if(!S.p)return false;const k=todayKey();
+  if(!info(k).expects||S.logs[k]?.taken)return false;
+  return toMin(nowHM())>=toMin(S.p.time);
+}
+function checkRemind(){
+  if(!due())return;
+  const k=todayKey(),now=Date.now();
+  if(rem.day===k&&now<rem.until)return;
+  rem={day:k,until:now+30*60e3};
+  const i=info(k);
+  $('#remText').textContent=`${S.p.name||'Sua pílula'} · ${i.pause?'placebo':'pílula '+i.n+' de '+S.p.active} · horário ${S.p.time}`;
+  $('#remind').classList.add('on');
+  notify('Hora da sua pílula',$('#remText').textContent);
+  try{navigator.setAppBadge&&navigator.setAppBadge(1)}catch(e){}
+}
+const hideRemind=()=>$('#remind').classList.remove('on');
+const clearBadge=()=>{try{navigator.clearAppBadge&&navigator.clearAppBadge()}catch(e){}};
+async function notify(title,body){
+  try{
+    if(!('Notification' in window)||Notification.permission!=='granted')return;
+    const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
+    if(reg)reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'nya-dose'});
+    else new Notification(title,{body});
+  }catch(e){}
+}
+function notifLabel(){
+  const l=$('#notifLabel');
+  if(!('Notification' in window)){l.textContent='Notificações indisponíveis aqui';return}
+  l.textContent=Notification.permission==='granted'?'Notificações ativadas · testar':Notification.permission==='denied'?'Bloqueadas nos ajustes do iPhone':'Ativar notificações';
+}
+
+/* ---------- exportações ---------- */
+let dl=null;try{window.claude&&window.claude.use&&window.claude.use('downloads').then(d=>{dl=d}).catch(()=>{})}catch(e){}
+async function download(name,text,mime){
+  if(dl){try{await dl.save({filename:name,data:text});return}catch(e){toast('Download cancelado');return}}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){toast('Não foi possível baixar aqui')}
+}
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);toast(msg)}catch(e){toast('Não foi possível copiar')}}
+function buildIcs(){
+  const p=S.p,[hh,mm]=p.time.split(':'),stamp=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const ev=(start,rule,n)=>['BEGIN:VEVENT',`UID:nya-${start}-${n}@nya.app`,`DTSTAMP:${stamp}`,`DTSTART:${start.replace(/-/g,'')}T${hh}${mm}00`,'DURATION:PT10M',rule,
+    `SUMMARY:NYA · hora da pílula${p.name?' ('+p.name.replace(/[,;\\]/g,' ')+')':''}`,'DESCRIPTION:Abra o NYA e registre a tomada.',
+    'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:PT0M','DESCRIPTION:Hora da pílula','END:VALARM','END:VEVENT'];
+  let L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//NYA//PT-BR','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:NYA'];
+  if(!p.pause||p.placebo)L=L.concat(ev(todayKey(),'RRULE:FREQ=DAILY',0));
+  else{const ps=info(todayKey()).packStart,c=cyc();for(let n=0;n<Math.ceil(366/c)+1;n++)L=L.concat(ev(addDays(ps,n*c),`RRULE:FREQ=DAILY;COUNT=${p.active}`,n))}
+  return L.concat('END:VCALENDAR').join('\r\n');
+}
+
+/* ---------- navegação ---------- */
+const VIEWS=['hoje','calendario','historico','ajustes'];
+function route(){
+  if(!S.p){show('welcome');bindSetup($('#setupHost'),true);$('#tabbar').hidden=true;return}
+  $('#tabbar').hidden=false;
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'hoje';show(v);
+  document.querySelectorAll('.tab').forEach(t=>{if(t.dataset.v===v)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
+  window.scrollTo(0,0);
+}
+const show=v=>document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+function renderAll(){
+  if(!S.p){route();return}
+  renderToday();renderCal();renderHist();
+  if(!document.activeElement||!$('#settingsHost').contains(document.activeElement))bindSetup($('#settingsHost'),false);
+  $('#shTime').textContent=S.p.time;
+  $('#appUrl').textContent=location.href.split('#')[0];
+  notifLabel();
+}
+
+/* ---------- eventos ---------- */
+const n0=new Date();cy=n0.getFullYear();cm=n0.getMonth();
+$('#tabbar').onclick=e=>{const b=e.target.closest('.tab');if(b)location.hash=b.dataset.v};
+window.addEventListener('hashchange',route);
+document.addEventListener('click',e=>{
+  const d=e.target.closest('[data-day]');if(d&&!d.classList.contains('out')){openDay(d.dataset.day);return}
+  const o=e.target.closest('[data-open]');if(o){openDay(o.dataset.open);return}
+  const mk=e.target.closest('[data-makeup]');if(mk){makeup(mk.dataset.makeup);return}
+  const sh=e.target.closest('[data-shift]');if(sh){const F=sh.dataset.shift;ask('Empurrar a cartela 1 dia?',`A pílula de ${fmtShort(F)} passa para o dia seguinte, e a pausa e o placebo também atrasam 1 dia.`,()=>shiftPack(F));return}
+  const us=e.target.closest('[data-unshift]');if(us){unshiftPack(us.dataset.unshift);return}
+  const m=e.target.closest('[data-ym]');if(m){[cy,cm]=m.dataset.ym.split('-').map(Number);renderCal();location.hash='calendario'}
+});
+$('#scrim').onclick=closeSheet;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();$('#confirm').classList.remove('on')}});
+$('#prevM').onclick=()=>{if(--cm<0){cm=11;cy--}renderCal()};
+$('#nextM').onclick=()=>{if(++cm>11){cm=0;cy++}renderCal()};
+$('#btnSym').onclick=()=>openDay(todayKey());
+$('#btnVomit').onclick=()=>{openDay(todayKey());const v=$('#fVom');v.checked=true;$('#wVom').hidden=false};
+$('#remTake').onclick=()=>takeNow();
+$('#remSnooze').onclick=()=>{rem.until=Date.now()+10*60e3;hideRemind();toast('Vou lembrar em 10 minutos')};
+$('#btnIcs').onclick=()=>{download('NYA-lembrete.ics',buildIcs(),'text/calendar');toast('Abra o arquivo para adicionar ao Calendário')};
+$('#btnCopyUrl').onclick=()=>copy(location.href.split('#')[0],'Endereço copiado');
+$('#btnNotif').onclick=async()=>{
+  if(!('Notification' in window)){toast('Instale o NYA na Tela de Início para ativar');return}
+  if(Notification.permission==='granted'){notify('NYA','Assim vai chegar o seu lembrete.');return}
+  try{await Notification.requestPermission()}catch(e){}notifLabel();
+};
+const backup=()=>JSON.stringify({app:'NYA',version:1,exported:new Date().toISOString(),data:S},null,1);
+$('#btnExport').onclick=()=>download(`NYA-backup-${todayKey()}.json`,backup(),'application/json');
+$('#btnCopyBackup').onclick=()=>copy(backup(),'Backup copiado');
+$('#importFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const j=JSON.parse(await f.text()),d=j.data||j;if(!d||typeof d.logs!=='object')throw 0;
+    ask('Importar backup?','Os dados atuais serão substituídos pelos do arquivo.',()=>{S={p:d.p||null,logs:d.logs};save();renderAll();route();toast('Backup restaurado')});
+  }catch(err){toast('Arquivo de backup inválido')}e.target.value='';
+};
+$('#btnReset').onclick=()=>ask('Apagar tudo?','Seu histórico e configurações serão removidos deste aparelho.',()=>{S={p:null,logs:{}};save();location.hash='';route();toast('Dados apagados')});
+
+route();renderAll();checkRemind();
+setInterval(()=>{checkRemind();if(document.visibilityState==='visible'&&$('#v-hoje').classList.contains('on')&&!$('#sheet').classList.contains('on'))renderToday()},30e3);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){renderAll();checkRemind()}});
+
+/* ---------- service worker (só quando hospedado em https) ---------- */
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+}
+</script>
+</body>
+</html>

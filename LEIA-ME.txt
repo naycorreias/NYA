@@ -1,0 +1,25 @@
+NYA — como colocar no ar e instalar no iPhone
+=============================================
+
+Arquivos:
+  index.html            o app inteiro (HTML + CSS + JS)
+  manifest.webmanifest  nome, cores e ícones do "app"
+  sw.js                 service worker (offline + toque na notificação)
+  icons/                ícones (iPhone usa apple-touch-icon.png)
+
+1) Hospedar grátis (precisa ser HTTPS) — escolha um:
+   • Netlify Drop: abra https://app.netlify.com/drop e arraste a pasta "nya".
+   • GitHub Pages: crie um repositório, envie os arquivos e ative
+     Settings → Pages → Branch: main / root.
+   • Vercel ou Cloudflare Pages também funcionam (site estático).
+
+2) Instalar no iPhone 15:
+   Safari → abra o endereço → Compartilhar → "Adicionar à Tela de Início".
+
+3) Lembrete confiável (recomendado):
+   No NYA: Ajustes → "Adicionar ao Calendário" (alarme diário só nos dias de pílula)
+   e/ou Atalhos → Automação → Horário do Dia → Mostrar Notificação.
+
+Dados: ficam só no aparelho (localStorage). Use Ajustes → Backup → Exportar
+antes de trocar de celular. Abrir pelo Safari e pelo ícone da Tela de Início
+são armazenamentos separados no iOS — use sempre o ícone depois de instalar.
